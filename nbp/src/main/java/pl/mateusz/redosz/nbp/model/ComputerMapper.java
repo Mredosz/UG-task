@@ -1,19 +1,22 @@
 package pl.mateusz.redosz.nbp.model;
 
 import pl.mateusz.redosz.nbp.model.dto.ComputerDto;
+import pl.mateusz.redosz.nbp.model.dto.ComputerSaveDto;
 import pl.mateusz.redosz.nbp.model.entity.Computer;
+
+import java.math.BigDecimal;
 
 public class ComputerMapper {
     private ComputerMapper() {
         /* This utility class should not be instantiated */
     }
 
-    public static Computer toEntity(ComputerDto computerDto){
+    public static Computer toEntity(ComputerSaveDto computerSaveDto, BigDecimal plnCost){
         return Computer.builder()
-                .name(computerDto.name())
-                .accountingDate(computerDto.accountingDate())
-                .usdCost(computerDto.usdCost())
-                .plnCost(computerDto.plnCost())
+                .name(computerSaveDto.name())
+                .accountingDate(computerSaveDto.accountingDate())
+                .usdCost(computerSaveDto.usdCost())
+                .plnCost(plnCost)
                 .build();
     }
 

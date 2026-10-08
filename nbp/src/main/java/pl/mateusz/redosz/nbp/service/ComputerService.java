@@ -1,12 +1,14 @@
 package pl.mateusz.redosz.nbp.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import pl.mateusz.redosz.nbp.model.ComputerMapper;
 import pl.mateusz.redosz.nbp.model.dto.ComputerDto;
 import pl.mateusz.redosz.nbp.model.dto.ComputerSaveDto;
 import pl.mateusz.redosz.nbp.repository.ComputerRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -15,13 +17,26 @@ import java.util.List;
 public class ComputerService {
     private final ComputerRepository computerRepository;
     private final NbpService nbpService;
+    private final XmlService xmlService;
 
-    public List<ComputerDto> getAllComputers(){
-        return computerRepository.findAll()
+    public List<ComputerDto> getAllComputers(String name, LocalDate accountingDate, String sort){
+        Sort sorting = Sort.unsorted();
+
+        if (sort != null) {
+            String[] parts = sort.split(",");
+
+            String property = parts[0];
+            Sort.Direction direction = parts.length > 1
+                    ? Sort.Direction.fromString(parts[1])
+                    : Sort.Direction.ASC;
+
+            sorting = Sort.by(direction, property);
+        }
+
+        return computerRepository.search(name, accountingDate, sorting)
                 .stream()
                 .map(ComputerMapper::toDto)
                 .toList();
-
     }
 
     public void save(ComputerSaveDto computerSaveDto){
@@ -29,6 +44,7 @@ public class ComputerService {
         var plnCost = computerSaveDto.usdCost().multiply(rate);
         var computer = ComputerMapper.toEntity(computerSaveDto, plnCost);
         computerRepository.save(computer);
+        xmlService.saveToXml();
     }
 
     public void deleteAll(){
